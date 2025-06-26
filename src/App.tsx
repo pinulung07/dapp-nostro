@@ -74,7 +74,6 @@ function WalletDropdown() {
         <span>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '...'}</span>
       </button>
 
-      {/* Menu Dropdown */}
       {isOpen && (
         <div className="absolute top-full right-0 mt-2 w-60 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 animate-fade-in-fast p-2">
           <div className="px-3 py-2">
@@ -205,7 +204,7 @@ function AdminPage({ onNavigate }: PageProps) {
 function RoadmapPage({ onNavigate }: PageProps) {
   const roadMapItems = [
     { q: 'Q2 2025', title: 'Initial Contribution to Nostro', status: 'Completed' },
-    { q: 'Q2 2025', title: 'Nostro Acquires Funds', status: 'In Progress' },
+    { q: 'Q2 2025', title: 'Nostro Acquires Funds', status: 'Completed' },
     { q: 'Q2 - Monad Mainnet', title: 'Nostro Develops More DApps on Monad', status: 'In Progress' },
     { q: 'Updated Soon', title: 'Monad Thrives with Nostro\'s Help', status: 'To Do' },
   ];
@@ -261,6 +260,10 @@ function App() {
   const { connectors, connect } = useConnect();
   const { address, isConnected } = useAccount();
 
+  // ▼▼▼ PERUBAHAN #1: Siapkan 'remote control' & state musik ▼▼▼
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [musicStarted, setMusicStarted] = useState(false);
+
   const { data: ownerAddress } = useReadContract({
     address: vendingMachineAddress,
     abi: vendingMachineAbi,
@@ -274,6 +277,15 @@ function App() {
   }, [isConnected]);
 
   const navigate = (page: string) => setCurrentPage(page);
+
+  // ▼▼▼ PERUBAHAN #2: Fungsi untuk memulai musik ▼▼▼
+  const startMusic = () => {
+    if (audioRef.current && !musicStarted) {
+      audioRef.current.volume = 0.3; // Atur volume biar gak terlalu kencang
+      audioRef.current.play().catch(e => console.error("Autoplay failed:", e));
+      setMusicStarted(true);
+    }
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -293,7 +305,11 @@ function App() {
       {connectors.map((connector) => (
         <button
           key={connector.uid}
-          onClick={() => connect({ connector })}
+          // ▼▼▼ PERUBAHAN #3: Panggil startMusic() saat tombol connect di klik ▼▼▼
+          onClick={() => {
+            startMusic();
+            connect({ connector });
+          }}
           type="button"
           className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-purple-500/50 transition-all duration-300 mb-2"
         >
@@ -305,6 +321,9 @@ function App() {
 
   return (
     <div className="text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+      {/* ▼▼▼ PERUBAHAN #4: Taruh audio player tersembunyi di sini ▼▼▼ */}
+      <audio ref={audioRef} src="/theme.mp3" loop preload="auto" />
+
       {/* Efek Background */}
       <div 
         style={{ backgroundImage: `url('/background.png')` }}
@@ -313,7 +332,6 @@ function App() {
       <div className="fixed inset-0 z-[-1] bg-black/70 backdrop-blur-sm" />
       
       <div className="w-full max-w-2xl">
-        {/* ▼▼▼ PERBAIKAN: Tambahkan 'relative z-10' ke header ▼▼▼ */}
         <header className="relative z-10 w-full text-center backdrop-blur-sm bg-black/20 p-4 rounded-xl mb-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-cyan-400 tracking-widest uppercase">Nostro's Initiative</h1>
